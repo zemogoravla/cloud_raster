@@ -1,0 +1,24 @@
+{
+    "pipeline": [
+        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_007_PAN_CROPPED/tiles/*/*/cloud.ply",
+        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_008_PAN_CROPPED/tiles/*/*/cloud.ply",
+        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_009_PAN_CROPPED/tiles/*/*/cloud.ply",
+
+        {
+        "type" : "filters.merge"
+        },
+        {
+            "type": "filters.python",
+            "function": "pdal_test_compute_raster",
+            "module": "anything",
+            "pdalargs": "{\"filename\":\"./pdal_test_compute_raster.tif\"}",
+            "script": "./test_cloud_raster.py"
+        },
+
+        {
+            "type": "writers.null"
+        }
+
+    ]
+
+}
