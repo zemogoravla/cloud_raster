@@ -10,14 +10,41 @@ from glob import glob
 sys.path.append('.') # needed for pdal to see the module
 import cloud_raster
 
+import rasterio
+
+def get_geotiff_spatial_meta(filename):
+    with  rasterio.open(filename, 'r') as s:
+        image_shape = s.shape
+        origin = (s.transform.c, s.transform.f)
+        pixel_size = (s.transform.a, s.transform.e)
+        shape = s.shape
+        return image_shape, origin, pixel_size
+
+def get_grid(image_shape, origin, pixel_size):
+    # center of the pixels
+    x_range = np.arange(origin[0] + pixel_size[0]/2,
+                        origin[0] + pixel_size[0] * image_shape[0],
+                        pixel_size[0])
+    y_range = np.arange(origin[1] + pixel_size[1] / 2,
+                        origin[1] + pixel_size[1] * image_shape[1],
+                        pixel_size[1])
+
+    X_mesh, Y_mesh = np.meshgrid(x_range, y_range)
+    meshgrid = (X_mesh, Y_mesh)
+    return meshgrid
+
 
 
 def test_loading_with_plyfile():
 
+    # dsm
+    gt_filename = '/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/JAX_DATA/gt/JAX_214_DSM.tif'
+
+    #path to the clouds with globbing
     filename_globs=[
         "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_007_PAN_CROPPED/tiles/*/*/cloud.ply",
-        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_008_PAN_CROPPED/tiles/*/*/cloud.ply",
-        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_009_PAN_CROPPED/tiles/*/*/cloud.ply",
+        #"/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_008_PAN_CROPPED/tiles/*/*/cloud.ply",
+        #"/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_009_PAN_CROPPED/tiles/*/*/cloud.ply",
     ]
 
     X = []
@@ -40,7 +67,15 @@ def test_loading_with_plyfile():
     Z = np.array(Z)
     print('#points =', X.shape[0])
 
-    test_compute_raster(X, Y, Z, search_radius=0.5, raster_resolution=0.5, operation='nanmax') #nanmean, nanmin, nanmax, etc.
+    #test with no grid
+    test_compute_raster(X, Y, Z, search_radius=0.5, raster_resolution=0.5, operation='nanmedian') #nanmean, nanmin, nanmax, etc.
+
+    #test with grid
+    # a) get the mesh related to the dsm
+    geotiff_meta = get_geotiff_spatial_meta(gt_filename)
+    meshgrid = get_grid(*geotiff_meta)
+    # b) compute raster
+    test_compute_raster(X, Y, Z, raster_meshgrid=meshgrid, search_radius=0.5, operation='nanmedian')
 
 
 def pdal_test_compute_raster(ins, outs):
@@ -86,10 +121,10 @@ def simple_test_compute_raster():
     return True
 
 
-def test_compute_raster(X, Y, Z, search_radius=0.5, raster_resolution=0.5, operation='nanmedian'):
+def test_compute_raster(X, Y, Z, search_radius=0.5, raster_meshgrid=None, raster_resolution=0.5, operation='nanmedian'):
 
 
-    R = cloud_raster.compute_raster(X, Y, Z, search_radius=search_radius, raster_resolution=raster_resolution, operation=operation)
+    R = cloud_raster.compute_raster(X, Y, Z, raster_meshgrid=raster_meshgrid, search_radius=search_radius, raster_resolution=raster_resolution, operation=operation)
 
     plt.figure(400)
     vmin, vmax = np.nanpercentile(R, (2, 98))
