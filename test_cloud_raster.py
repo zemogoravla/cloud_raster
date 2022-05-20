@@ -43,16 +43,17 @@ def test_loading_with_plyfile():
     #path to the clouds with globbing
     filename_globs=[
         "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_007_PAN_CROPPED/tiles/*/*/cloud.ply",
-        #"/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_008_PAN_CROPPED/tiles/*/*/cloud.ply",
-        #"/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_009_PAN_CROPPED/tiles/*/*/cloud.ply",
+        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_008_PAN_CROPPED/tiles/*/*/cloud.ply",
+        "/media/agomez/SeagateGoFlex750GB/SATELITE/DATA/COMPARISON_JAX/s2p/JAX_214/JAX_214_006_PAN_CROPPED_JAX_214_009_PAN_CROPPED/tiles/*/*/cloud.ply",
     ]
 
     X = []
     Y = []
     Z = []
     for g in filename_globs:
-        filenames = glob(filename_globs[0])
+        filenames = glob(g)
         for f in filenames:
+            print(f)
             plydata = PlyData.read(f)
             x = plydata['vertex']['x']
             y = plydata['vertex']['y']
