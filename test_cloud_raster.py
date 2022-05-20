@@ -1,14 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.io import imread,imsave
-from scipy.spatial import KDTree
-from tqdm import tqdm
+
 import sys
 from plyfile import PlyData, PlyElement
 from glob import glob
+#from timing import timeit
 
 sys.path.append('.') # needed for pdal to see the module
-import cloud_raster
+
+#import cloud_raster                         # Without numba
+import cloud_raster_numba as cloud_raster    # With numba
 
 import rasterio
 
@@ -17,7 +19,6 @@ def get_geotiff_spatial_meta(filename):
         image_shape = s.shape
         origin = (s.transform.c, s.transform.f)
         pixel_size = (s.transform.a, s.transform.e)
-        shape = s.shape
         return image_shape, origin, pixel_size
 
 def get_grid(image_shape, origin, pixel_size):
@@ -120,7 +121,6 @@ def simple_test_compute_raster():
     test_compute_raster(X,Y,Z, search_radius=2, raster_resolution=0.5)
 
     return True
-
 
 def test_compute_raster(X, Y, Z, search_radius=0.5, raster_meshgrid=None, raster_resolution=0.5, operation='nanmedian'):
 
