@@ -8,15 +8,15 @@ def compute_raster(first_coord_array, second_coord_array, scalar_values_array,
                    search_radius , operation='nanmedian', raster_meshgrid=None, raster_resolution=1 ):
     '''
 
-    :param first_coord_array:    Nx1 array of first coordinates  (the first_coords and second coords will be usually X,Y but not necessary
+    :param first_coord_array:    Nx1 array of first coordinates  (the first_coords and second coords will be usually X,Y but not necessarily
     :param second_coord_array:   Nx1 array of second coordinates
-    :param scalar_values_array:  Nx1 array of scalar values to raster  (the scalar_values may be a coordinate (e.g Z) or a property
+    :param scalar_values_array:  Nx1 array of scalar values  (the scalar_values may be a coordinate (e.g Z) or a property
     :param search_radius:        The radius to search neighbor points of the cloud around the grid_points,
                                  The search is in the first_coord-second_coord plane. The radius is in metric units, not in pixels
     :param operation:            operation to perform on the neighbor points (any of numpy: nanmedian, nanmin, nanmax, nanmean, etc.)
     :param raster_meshgrid:      (optional) 2-tuple of arrays defining the coordinates of the grid for the raster
                                  If not defined, a grid covering all the extension of the cloud at the specified resolution
-                                 if created
+                                 is created
     :param raster_resolution:    (optional, required if raster_meshgrid is not defined)  In metric units, not in pixels
     :return: raster              array the same size as defined by the raster_meshgrid or the raster_resolution
     '''
@@ -49,8 +49,9 @@ def compute_raster(first_coord_array, second_coord_array, scalar_values_array,
         ymin = Y.min()
         ymax = Y.max()
 
-        x_range = np.arange(xmin , xmax+raster_resolution, raster_resolution)
-        y_range = np.arange(ymin , ymax+raster_resolution, raster_resolution)
+        # pixel centers
+        x_range = np.arange(xmin + raster_resolution/2 , xmax, raster_resolution)
+        y_range = np.arange(ymin + raster_resolution/2 , ymax, raster_resolution)
 
         X_mesh, Y_mesh = np.meshgrid(x_range, y_range)
         raster_meshgrid = (X_mesh, Y_mesh)
